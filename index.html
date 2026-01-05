@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Firebase Demo</title>
+
+    <!-- مكتبة Firestore (الإصدار 8.10.0) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <h1>Add P</h1>
+
+    <form id="productForm">
+        <input type="text" id="productName" placeholder="Product Name" required /><br /><br />
+        <input type="number" id="productPrice" placeholder="Price" required /><br /><br />
+        <button type="submit">Add Product</button>
+    </form>
+
+    <script>
+       
+
+ const firebaseConfig = {
+  apiKey: "AIzaSyBhfq7_xROsUdZn9toGTSeavzyu2uTaOmM",
+  authDomain: "rafiqi-university.firebaseapp.com",
+  projectId: "rafiqi-university",
+  storageBucket: "rafiqi-university.firebasestorage.app",
+  messagingSenderId: "772477171251",
+  appId: "1:772477171251:web:cef7986472c0632e765546"
+};
+
+
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // التعامل مع الفورم
+        const form = document.getElementById("productForm");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            console.log("Form submitted!"); // لتأكيد عمل الحدث هذه الرسالة ستظهر في Console
+
+            const name = document.getElementById("productName").value;
+            const price = parseFloat(document.getElementById("productPrice").value);
+
+            try {
+                await db.collection("products").add({ name, price });
+                alert("✅ Product added successfully!");
+                form.reset();
+            } catch (err) {
+                alert("❌ Error: " + err.message);
+            }
+        });
+    </script>
+</body>
+</html>
+
