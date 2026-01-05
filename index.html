@@ -1,59 +1,482 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <title>Firebase Demo</title>
+    <title>رفيقي الجامعي - إدارة الطلاب</title>
 
-    <!-- مكتبة Firestore (الإصدار 8.10.0) -->
+    <!-- Firebase v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .app-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        }
+
+        .app-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .app-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            margin-top: 6px;
+        }
+
+        .badge span.icon {
+            font-size: 14px;
+        }
+
+        .form-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 16px;
+        }
+
+        .form-section input {
+            flex: 1;
+            min-width: 220px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-section input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.15s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #6b7280;
+        }
+
+        .btn-ghost:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .status-bar {
+            margin-bottom: 12px;
+            min-height: 20px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .status-bar span.ok {
+            color: #16a34a;
+        }
+
+        .status-bar span.error {
+            color: #b91c1c;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        tr:hover td {
+            background: #f9fafb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px 0 8px;
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: #ecfdf5;
+            color: #15803d;
+        }
+
+        .footer-note {
+            margin-top: 18px;
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: left;
+            direction: ltr;
+        }
+
+        /* نافذة التعديل (مودال بسيط) */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 320px;
+            max-width: 90%;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
+        }
+
+        .modal-header {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Add P</h1>
+    <div class="app-container">
+        <div class="card">
+            <header class="app-header">
+                <div class="app-title">📚 رفيقي الجامعي – إدارة قائمة الطلاب</div>
+                <div class="app-subtitle">
+                    أضف، عدّل، واحذف الطلاب مباشرة من واجهة بسيطة متصلة بـ Firebase Firestore.
+                </div>
+                <div class="badge">
+                    <span class="icon">⚡</span>
+                    <span>متصل بـ Firebase – وضع تجريبي</span>
+                </div>
+            </header>
 
-    <form id="productForm">
-        <input type="text" id="productName" placeholder="Product Name" required /><br /><br />
-        <input type="number" id="productPrice" placeholder="Price" required /><br /><br />
-        <button type="submit">Add Product</button>
-    </form>
+            <!-- نموذج إضافة طالب جديد -->
+            <section class="form-section">
+                <input
+                    type="text"
+                    id="studentNameInput"
+                    placeholder="أدخل اسم الطالب"
+                    autocomplete="off"
+                />
+                <button class="btn btn-primary" id="addStudentBtn">
+                    ➕ إضافة طالب
+                </button>
+            </section>
+
+            <!-- رسالة حالة -->
+            <div class="status-bar" id="statusBar"></div>
+
+            <!-- جدول عرض الطلاب -->
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم الطالب</th>
+                            <th>معرّف المستند (Firestore)</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- سيتم تعبئته ديناميكياً -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" id="emptyState" style="display: none;">
+                لا توجد بيانات طلاب حتى الآن. ابدأ بإضافة أول طالب 😊
+            </div>
+
+            <div class="footer-note">
+                رفيقي الجامعي – Demo / Firebase Firestore – Students Collection
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التعديل -->
+    <div class="modal-backdrop" id="editModalBackdrop">
+        <div class="modal">
+            <div class="modal-header">✏️ تعديل اسم الطالب</div>
+            <div>
+                <input type="text" id="editStudentNameInput" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #d1d5db; outline: none; font-size: 14px;" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" id="cancelEditBtn">إلغاء</button>
+                <button class="btn btn-primary" id="saveEditBtn">حفظ التعديل</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-       
+        // إعداد Firebase لمشروع rafiqi-university
+        const firebaseConfig = {
+          apiKey: "AIzaSyBhfq7_xROsUdZn9toGTSeavzyu2uTaOmM",
+          authDomain: "rafiqi-university.firebaseapp.com",
+          projectId: "rafiqi-university",
+          storageBucket: "rafiqi-university.firebasestorage.app",
+          messagingSenderId: "772477171251",
+          appId: "1:772477171251:web:cef7986472c0632e765546"
+        };
 
- const firebaseConfig = {
-  apiKey: "AIzaSyBhfq7_xROsUdZn9toGTSeavzyu2uTaOmM",
-  authDomain: "rafiqi-university.firebaseapp.com",
-  projectId: "rafiqi-university",
-  storageBucket: "rafiqi-university.firebasestorage.app",
-  messagingSenderId: "772477171251",
-  appId: "1:772477171251:web:cef7986472c0632e765546"
-};
-
-
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // التعامل مع الفورم
-        const form = document.getElementById("productForm");
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+        // مراجع للعناصر
+        const studentNameInput = document.getElementById("studentNameInput");
+        const addStudentBtn = document.getElementById("addStudentBtn");
+        const studentsTableBody = document.getElementById("studentsTableBody");
+        const statusBar = document.getElementById("statusBar");
+        const emptyState = document.getElementById("emptyState");
 
-            console.log("Form submitted!"); // لتأكيد عمل الحدث هذه الرسالة ستظهر في Console
+        // عناصر نافذة التعديل
+        const editModalBackdrop = document.getElementById("editModalBackdrop");
+        const editStudentNameInput = document.getElementById("editStudentNameInput");
+        const cancelEditBtn = document.getElementById("cancelEditBtn");
+        const saveEditBtn = document.getElementById("saveEditBtn");
 
-            const name = document.getElementById("productName").value;
-            const price = parseFloat(document.getElementById("productPrice").value);
+        let editingStudentId = null; // لتخزين ID الطالب الجاري تعديله
+
+        // دالة عرض رسالة حالة
+        function setStatus(message, type = "normal") {
+            if (!message) {
+                statusBar.innerHTML = "";
+                return;
+            }
+            if (type === "ok") {
+                statusBar.innerHTML = `<span class="ok">✅ ${message}</span>`;
+            } else if (type === "error") {
+                statusBar.innerHTML = `<span class="error">❌ ${message}</span>`;
+            } else {
+                statusBar.innerHTML = message;
+            }
+        }
+
+        // فتح نافذة التعديل
+        function openEditModal(docId, currentName) {
+            editingStudentId = docId;
+            editStudentNameInput.value = currentName || "";
+            editModalBackdrop.style.display = "flex";
+            editStudentNameInput.focus();
+        }
+
+        // إغلاق نافذة التعديل
+        function closeEditModal() {
+            editingStudentId = null;
+            editModalBackdrop.style.display = "none";
+        }
+
+        cancelEditBtn.addEventListener("click", closeEditModal);
+
+        saveEditBtn.addEventListener("click", async () => {
+            const newName = editStudentNameInput.value.trim();
+            if (!editingStudentId || newName === "") {
+                setStatus("الرجاء إدخال اسم صالح قبل الحفظ.", "error");
+                return;
+            }
 
             try {
-                await db.collection("products").add({ name, price });
-                alert("✅ Product added successfully!");
-                form.reset();
+                await db.collection("students").doc(editingStudentId).update({
+                    name: newName
+                });
+                setStatus("تم تعديل اسم الطالب بنجاح.", "ok");
+                closeEditModal();
             } catch (err) {
-                alert("❌ Error: " + err.message);
+                console.error(err);
+                setStatus("حدث خطأ أثناء تعديل الطالب: " + err.message, "error");
             }
+        });
+
+        // إضافة طالب جديد
+        addStudentBtn.addEventListener("click", async () => {
+            const name = studentNameInput.value.trim();
+            if (name === "") {
+                setStatus("الرجاء إدخال اسم الطالب أولاً.", "error");
+                return;
+            }
+
+            try {
+                await db.collection("students").add({
+                    name: name,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                setStatus("تم إضافة الطالب بنجاح.", "ok");
+                studentNameInput.value = "";
+                studentNameInput.focus();
+            } catch (err) {
+                console.error(err);
+                setStatus("حدث خطأ أثناء إضافة الطالب: " + err.message, "error");
+            }
+        });
+
+        // عرض قائمة الطلاب بشكل حي باستخدام onSnapshot
+        db.collection("students")
+          .orderBy("createdAt", "asc")
+          .onSnapshot((snapshot) => {
+            studentsTableBody.innerHTML = "";
+            let index = 1;
+
+            if (snapshot.empty) {
+                emptyState.style.display = "block";
+            } else {
+                emptyState.style.display = "none";
+            }
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${index}</td>
+                    <td>
+                        ${data.name || "-"}
+                        <span class="tag">طالب</span>
+                    </td>
+                    <td style="font-size: 11px; color: #9ca3af;">${doc.id}</td>
+                    <td>
+                        <button class="btn btn-ghost" data-edit="${doc.id}" data-name="${data.name || ""}">
+                            ✏️ تعديل
+                        </button>
+                        <button class="btn btn-danger" data-delete="${doc.id}">
+                            🗑 حذف
+                        </button>
+                    </td>
+                `;
+
+                studentsTableBody.appendChild(tr);
+                index++;
+            });
+
+            // ربط أزرار التعديل والحذف بعد إعادة بناء الجدول
+            document.querySelectorAll("[data-edit]").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    const id = e.currentTarget.getAttribute("data-edit");
+                    const currentName = e.currentTarget.getAttribute("data-name");
+                    openEditModal(id, currentName);
+                });
+            });
+
+            document.querySelectorAll("[data-delete]").forEach((btn) => {
+                btn.addEventListener("click", async (e) => {
+                    const id = e.currentTarget.getAttribute("data-delete");
+                    const confirmDelete = confirm("هل أنت متأكد من حذف هذا الطالب؟");
+                    if (!confirmDelete) return;
+
+                    try {
+                        await db.collection("students").doc(id).delete();
+                        setStatus("تم حذف الطالب بنجاح.", "ok");
+                    } catch (err) {
+                        console.error(err);
+                        setStatus("حدث خطأ أثناء حذف الطالب: " + err.message, "error");
+                    }
+                });
+            });
+
+        }, (error) => {
+            console.error(error);
+            setStatus("حدث خطأ في جلب بيانات الطلاب: " + error.message, "error");
         });
     </script>
 </body>
 </html>
-
